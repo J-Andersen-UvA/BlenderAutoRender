@@ -29,7 +29,7 @@ if background_path:
     # Prepare arguments for the script
     sys.argv = [__file__, "--", background_path]
     # Run the background script
-    bpy.ops.script.python_file_run(filepath=os.path.join(os.path.dirname(__file__), "replaceBackground.py"))
+    bpy.ops.script.python_file_run(filepath=os.path.join(os.path.dirname(__file__), "optionalScripts/replaceBackground.py"))
 
 # Optional: Apply time-stretching
 if timestretch:
@@ -37,7 +37,7 @@ if timestretch:
     # Prepare arguments for the script
     sys.argv = [__file__, "--", str(target_fps), str(old_fps)]
     # Run the time-stretching script
-    bpy.ops.script.python_file_run(filepath=os.path.join(os.path.dirname(__file__), "timeStretch.py"))
+    bpy.ops.script.python_file_run(filepath=os.path.join(os.path.dirname(__file__), "optionalScripts/timeStretch.py"))
 
 # # Example: Render the scene
 # output_file = os.path.join(output_folder, os.path.basename(glb_file).replace('.glb', '.png'))
