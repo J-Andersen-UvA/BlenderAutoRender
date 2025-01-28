@@ -49,6 +49,10 @@ if '--frame_range' in argv:
     end_frame = int(argv[argv.index('--frame_range') + 2])
     camera_renderer.set_frame_range(start_frame, end_frame)
 
+if '--output_format' in argv:
+    output_format = argv[argv.index('--output_format') + 1]
+    camera_renderer.set_output_format(output_format)
+
 camera_renderer.render_all_cameras()
 
 # Save the .blend file with the rendered results as a new file

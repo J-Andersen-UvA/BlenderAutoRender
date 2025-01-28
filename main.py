@@ -3,7 +3,7 @@ import sys
 import subprocess
 import argparse
 
-def launch_blender(blender_path, scene_path, input_folder, output_folder, deheaded=True, render_engine="CYCLES", background=None, timestretch=None, frame_range=None):
+def launch_blender(blender_path, scene_path, input_folder, output_folder, deheaded=True, render_engine="CYCLES", background=None, timestretch=None, frame_range=None, output_format='PNG'):
     for file_name in os.listdir(input_folder):
         if file_name.endswith('.glb'):
             file_path = os.path.join(input_folder, file_name)
@@ -39,6 +39,9 @@ def launch_blender(blender_path, scene_path, input_folder, output_folder, dehead
                 start_frame, end_frame = frame_range
                 command.extend(['--frame_range', str(start_frame), str(end_frame)])
 
+            # Add optional output format
+            command.extend(['--output_format', output_format])
+
             print(f"Running Blender command:\n{command}\n")
             # Run the Blender command for this .glb file
             subprocess.run(command)
@@ -59,6 +62,7 @@ def main():
     parser.add_argument('--background', type=str, help='Path to background .glb file to replace the scene background')
     parser.add_argument('--timestretch', nargs=2, metavar=('TARGET_FPS', 'OLD_FPS'), type=int, help='Apply time stretching with target and old FPS values')
     parser.add_argument('--frame_range', nargs=2, metavar=('START_FRAME', 'END_FRAME'), type=int, help='Set the frame range for rendering')
+    parser.add_argument('--output_format', type=str, default='PNG', help='Output file format for rendered images', choices=['PNG', 'JPEG', 'WebP', 'OPEN_EXR', 'FFMPEG'])
 
     args = parser.parse_args()
 
@@ -113,6 +117,10 @@ def main():
         elif end_frame < start_frame:
             print("Error: End frame must be greater than or equal to start frame")
             sys.exit(1)
+    
+    if args.output_format not in ['PNG', 'JPEG', 'WebP', 'OPEN_EXR', 'FFMPEG']:
+        print("Error: 'output_format' argument must be 'PNG', 'JPEG', 'WebP', 'OPEN_EXR', or 'FFMPEG'")
+        sys.exit(1)
 
     # Launch Blender for each .glb file
     launch_blender(
@@ -125,6 +133,7 @@ def main():
         background=args.background,
         timestretch=args.timestretch,
         frame_range=args.frame_range,
+        output_format=args.output_format,
     )
 
 if __name__ == "__main__":

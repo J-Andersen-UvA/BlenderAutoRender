@@ -5,7 +5,7 @@ import argparse
 import sys
 
 class CamerasRenderer:
-    def __init__(self, output_dir, render_engine="CYCLES"):
+    def __init__(self, output_dir, render_engine="CYCLES", output_format="PNG"):
         """
         Initialize the CamerasRenderer with an output directory and render engine.
 
@@ -15,7 +15,16 @@ class CamerasRenderer:
         self.base_output_dir = output_dir
         self.scene = bpy.context.scene
         self.set_render_engine(render_engine)
-        self.output_dir = self.create_incremental_output_dir()
+        self.output_dir = self.__create_incremental_output_dir()
+        self.set_output_format(output_format)
+
+    def set_output_format(self, output_format):
+        """
+        Set the output format for rendering.
+
+        :param output_format: Output format to use (e.g., "PNG", "JPEG", "FFMPEG", etc.).
+        """
+        self.scene.render.image_settings.file_format = output_format
 
     def set_render_engine(self, render_engine):
         """
@@ -27,7 +36,7 @@ class CamerasRenderer:
             raise ValueError("Invalid render engine. Choose 'CYCLES' or 'BLENDER_EEVEE'.")
         self.scene.render.engine = render_engine.upper()
 
-    def create_incremental_output_dir(self):
+    def __create_incremental_output_dir(self):
         """
         Create an incremental output directory to avoid overwriting previous renders.
 
