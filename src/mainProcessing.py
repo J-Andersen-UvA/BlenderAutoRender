@@ -58,6 +58,10 @@ if '--render_resolution' in argv:
     height = int(argv[argv.index('--render_resolution') + 2])
     camera_renderer.set_resolution(width, height)
 
+if '--render_samples' in argv:
+    samples = int(argv[argv.index('--render_samples') + 1])
+    camera_renderer.set_render_samples(samples)
+
 camera_renderer.render_all_cameras()
 
 # Save the .blend file with the rendered results as a new file

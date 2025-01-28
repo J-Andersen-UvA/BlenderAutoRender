@@ -3,7 +3,7 @@ import sys
 import subprocess
 import argparse
 
-def launch_blender(blender_path, scene_path, input_folder, output_folder, deheaded=True, render_engine="CYCLES", background=None, timestretch=None, frame_range=None, output_format='PNG', render_resolution=[1920, 1080]):
+def launch_blender(blender_path, scene_path, input_folder, output_folder, deheaded=True, render_engine="CYCLES", background=None, timestretch=None, frame_range=None, output_format='PNG', render_resolution=[1920, 1080], render_samples=128):
     for file_name in os.listdir(input_folder):
         if file_name.endswith('.glb'):
             file_path = os.path.join(input_folder, file_name)
@@ -45,6 +45,9 @@ def launch_blender(blender_path, scene_path, input_folder, output_folder, dehead
             # Add optional render resolution
             command.extend(['--render_resolution', str(render_resolution[0]), str(render_resolution[1])])
 
+            # Add optional render samples
+            command.extend(['--render_samples', str(render_samples)])
+
             print(f"Running Blender command:\n{command}\n")
             # Run the Blender command for this .glb file
             subprocess.run(command)
@@ -67,6 +70,7 @@ def main():
     parser.add_argument('--frame_range', nargs=2, metavar=('START_FRAME', 'END_FRAME'), type=int, help='Set the frame range for rendering')
     parser.add_argument('--output_format', type=str, default='PNG', help='Output file format for rendered images', choices=['PNG', 'JPEG', 'WebP', 'OPEN_EXR', 'FFMPEG'])
     parser.add_argument('--render_resolution', type=int, nargs=2, metavar=('WIDTH', 'HEIGHT'), help='Set the render resolution', default=[1920, 1080])
+    parser.add_argument('--render_samples', type=int, help='Set the render samples for Cycles rendering', default=128)
 
     args = parser.parse_args()
 
@@ -136,6 +140,10 @@ def main():
         if width % 2 != 0 or height % 2 != 0:
             print("Warning: Resolution values should be even numbers for better compatibility")
 
+    if args.render_samples <= 0:
+        print("Error: Render samples must be a positive integer")
+        sys.exit(1)
+
     # Launch Blender for each .glb file
     launch_blender(
         blender_path=blender_path,
@@ -149,6 +157,7 @@ def main():
         frame_range=args.frame_range,
         output_format=args.output_format,
         render_resolution=args.render_resolution,
+        render_samples=args.render_samples,
     )
 
 if __name__ == "__main__":

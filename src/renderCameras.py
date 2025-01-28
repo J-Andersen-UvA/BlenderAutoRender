@@ -46,6 +46,21 @@ class CamerasRenderer:
         self.scene.render.resolution_x = width
         self.scene.render.resolution_y = height
 
+    def set_render_samples(self, samples):
+        """
+        Set the number of samples for rendering.
+
+        :param samples: Number of samples to use for rendering.
+        """
+        if samples < 128:
+            print("Warning: Low sample count may result in noisy renders.")
+
+        if self.scene.render.engine != 'CYCLES':
+            print("Warning: Sample count is only relevant for Cycles render engine. Ignoring request...")
+            return
+
+        self.scene.cycles.samples = samples
+
     def __create_incremental_output_dir(self):
         """
         Create an incremental output directory to avoid overwriting previous renders.
