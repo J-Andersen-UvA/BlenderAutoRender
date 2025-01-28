@@ -98,6 +98,6 @@ if __name__ == "__main__":
     else:
         args = parser.parse_args()
 
-    renderer = CameraRenderer(args.output_dir, args.render_engine)
+    renderer = CamerasRenderer(args.output_dir, args.render_engine)
     renderer.set_frame_range(args.start_frame, args.end_frame)
     renderer.render_all_cameras()

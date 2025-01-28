@@ -3,7 +3,7 @@ import sys
 import subprocess
 import argparse
 
-def launch_blender(blender_path, scene_path, input_folder, output_folder, deheaded=True, render_engine="CYCLES", background=None, timestretch=None):
+def launch_blender(blender_path, scene_path, input_folder, output_folder, deheaded=True, render_engine="CYCLES", background=None, timestretch=None, frame_range=None):
     for file_name in os.listdir(input_folder):
         if file_name.endswith('.glb'):
             file_path = os.path.join(input_folder, file_name)
@@ -34,6 +34,11 @@ def launch_blender(blender_path, scene_path, input_folder, output_folder, dehead
                 target_fps, old_fps = timestretch
                 command.extend(['--timestretch', str(target_fps), str(old_fps)])
             
+            # Add optional frame range
+            if frame_range:
+                start_frame, end_frame = frame_range
+                command.extend(['--frame_range', str(start_frame), str(end_frame)])
+
             print(f"Running Blender command:\n{command}\n")
             # Run the Blender command for this .glb file
             subprocess.run(command)
@@ -53,6 +58,7 @@ def main():
     # Optional arguments
     parser.add_argument('--background', type=str, help='Path to background .glb file to replace the scene background')
     parser.add_argument('--timestretch', nargs=2, metavar=('TARGET_FPS', 'OLD_FPS'), type=int, help='Apply time stretching with target and old FPS values')
+    parser.add_argument('--frame_range', nargs=2, metavar=('START_FRAME', 'END_FRAME'), type=int, help='Set the frame range for rendering')
 
     args = parser.parse_args()
 
@@ -78,6 +84,7 @@ def main():
         print(f"Output folder not found: {output_folder}")
         sys.exit(1)
 
+    # Validate optional arguments
     if args.deheaded.lower() not in ['true', 'false']:
         print("Error: 'deheaded' argument must be 'true' or 'false'")
         sys.exit(1)
@@ -87,6 +94,25 @@ def main():
     if args.render_engine not in ['CYCLES', 'BLENDER_EEVEE']:
         print("Error: 'render_engine' argument must be 'CYCLES' or 'BLENDER_EEVEE'")
         sys.exit(1)
+    
+    if args.background and not os.path.isfile(args.background):
+        print(f"Background file not found: {args.background}")
+        sys.exit(1)
+    
+    if args.timestretch:
+        target_fps, old_fps = args.timestretch
+        if target_fps <= 0 or old_fps <= 0:
+            print("Error: FPS values must be positive integers")
+            sys.exit(1)
+
+    if args.frame_range:
+        start_frame, end_frame = args.frame_range
+        if start_frame < 0 or end_frame < 0:
+            print("Error: Frame range values must be non-negative integers")
+            sys.exit(1)
+        elif end_frame < start_frame:
+            print("Error: End frame must be greater than or equal to start frame")
+            sys.exit(1)
 
     # Launch Blender for each .glb file
     launch_blender(
@@ -98,6 +124,7 @@ def main():
         render_engine=args.render_engine,
         background=args.background,
         timestretch=args.timestretch,
+        frame_range=args.frame_range,
     )
 
 if __name__ == "__main__":

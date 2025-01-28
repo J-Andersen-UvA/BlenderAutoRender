@@ -19,35 +19,36 @@ render_engine = argv[2]  # Render engine to use ("CYCLES" or "BLENDER_EEVEE")
 background_path = None
 timestretch = None
 
+# Optional: Replace the background
 if '--background_path' in argv:
     background_path = argv[argv.index('--background_path') + 1]
-
-if '--timestretch' in argv:
-    target_fps = int(argv[argv.index('--timestretch') + 1])
-    old_fps = int(argv[argv.index('--timestretch') + 2])
-    timestretch = (target_fps, old_fps)
-
-# Load the .glb file
-bpy.ops.import_scene.gltf(filepath=glb_file)
-
-# Optional: Replace the background
-if background_path:
     # Prepare arguments for the script
     sys.argv = [__file__, "--", background_path]
     # Run the background script
     bpy.ops.script.python_file_run(filepath=os.path.join(os.path.dirname(__file__), "optionalScripts/replaceBackground.py"))
 
 # Optional: Apply time-stretching
-if timestretch:
+if '--timestretch' in argv:
+    target_fps = int(argv[argv.index('--timestretch') + 1])
+    old_fps = int(argv[argv.index('--timestretch') + 2])
+    timestretch = (target_fps, old_fps)
     target_fps, old_fps = timestretch
     # Prepare arguments for the script
     sys.argv = [__file__, "--", str(target_fps), str(old_fps)]
     # Run the time-stretching script
     bpy.ops.script.python_file_run(filepath=os.path.join(os.path.dirname(__file__), "optionalScripts/timeStretch.py"))
 
+# Load the .glb file
+bpy.ops.import_scene.gltf(filepath=glb_file)
+
 # Render the scene
 camera_renderer = rc.CamerasRenderer(output_folder, render_engine)
-camera_renderer.set_frame_range(250, 350) # TESTING
+# Optional: Set the frame range
+if '--frame_range' in argv:
+    start_frame = int(argv[argv.index('--frame_range') + 1])
+    end_frame = int(argv[argv.index('--frame_range') + 2])
+    camera_renderer.set_frame_range(start_frame, end_frame)
+
 camera_renderer.render_all_cameras()
 
 # Save the .blend file with the rendered results as a new file
