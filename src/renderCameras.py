@@ -36,6 +36,16 @@ class CamerasRenderer:
             raise ValueError("Invalid render engine. Choose 'CYCLES' or 'BLENDER_EEVEE'.")
         self.scene.render.engine = render_engine.upper()
 
+    def set_resolution(self, width, height):
+        """
+        Set the resolution for rendering.
+
+        :param width: Width of the rendered frames.
+        :param height: Height of the rendered frames.
+        """
+        self.scene.render.resolution_x = width
+        self.scene.render.resolution_y = height
+
     def __create_incremental_output_dir(self):
         """
         Create an incremental output directory to avoid overwriting previous renders.

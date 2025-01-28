@@ -53,6 +53,11 @@ if '--output_format' in argv:
     output_format = argv[argv.index('--output_format') + 1]
     camera_renderer.set_output_format(output_format)
 
+if '--render_resolution' in argv:
+    width = int(argv[argv.index('--render_resolution') + 1])
+    height = int(argv[argv.index('--render_resolution') + 2])
+    camera_renderer.set_resolution(width, height)
+
 camera_renderer.render_all_cameras()
 
 # Save the .blend file with the rendered results as a new file
