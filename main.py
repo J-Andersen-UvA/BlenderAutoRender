@@ -3,7 +3,7 @@ import sys
 import subprocess
 import argparse
 
-def launch_blender(blender_path, scene_path, input_folder, output_folder, deheaded=True, background=None, timestretch=None):
+def launch_blender(blender_path, scene_path, input_folder, output_folder, deheaded=True, render_engine="CYCLES", background=None, timestretch=None):
     for file_name in os.listdir(input_folder):
         if file_name.endswith('.glb'):
             file_path = os.path.join(input_folder, file_name)
@@ -21,7 +21,8 @@ def launch_blender(blender_path, scene_path, input_folder, output_folder, dehead
                 '--python', '/src/mainProcessing.py',  # The main script for handling all operations
                 '--',  # Pass additional arguments after this
                 file_path,  # Path to the .glb file
-                output_folder  # Output folder for saving results
+                output_folder,  # Output folder for saving results
+                render_engine,  # Render engine to use
             ])
             
             # Add optional background replacement
@@ -33,6 +34,7 @@ def launch_blender(blender_path, scene_path, input_folder, output_folder, dehead
                 target_fps, old_fps = timestretch
                 command.extend(['--timestretch', str(target_fps), str(old_fps)])
             
+            print(f"Running Blender command:\n{command}\n")
             # Run the Blender command for this .glb file
             subprocess.run(command)
 
@@ -45,6 +47,8 @@ def main():
     parser.add_argument('--input', type=str, default='./in', help='Input folder containing animation files')
     parser.add_argument('--output', type=str, default='./out', help='Output folder for rendered files')
     parser.add_argument('--deheaded', type=str, default='true', help='Run Blender in background mode')
+    parser.add_argument("--render_engine", type=str, default="CYCLES", choices=["CYCLES", "BLENDER_EEVEE"],
+                        help="Render engine to use (default: CYCLES).")
 
     # Optional arguments
     parser.add_argument('--background', type=str, help='Path to background .glb file to replace the scene background')
@@ -79,6 +83,10 @@ def main():
         sys.exit(1)
     else:
         args.deheaded = args.deheaded.lower() == 'true'
+    
+    if args.render_engine not in ['CYCLES', 'BLENDER_EEVEE']:
+        print("Error: 'render_engine' argument must be 'CYCLES' or 'BLENDER_EEVEE'")
+        sys.exit(1)
 
     # Launch Blender for each .glb file
     launch_blender(
@@ -87,8 +95,9 @@ def main():
         input_folder=input_folder,
         output_folder=output_folder,
         deheaded=args.deheaded,
+        render_engine=args.render_engine,
         background=args.background,
-        timestretch=args.timestretch
+        timestretch=args.timestretch,
     )
 
 if __name__ == "__main__":
