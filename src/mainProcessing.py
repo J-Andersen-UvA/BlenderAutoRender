@@ -50,6 +50,26 @@ print("Transferring animations...")
 transfer.transfer_bone_animation()
 transfer.transfer_shape_key_animation()
 importer.remove_collection_and_contents()
+print("Animations transfer done.")
+
+# Optional: Apply modifiers and constraints to all cameras
+if '--cameras_apply_modifiers' in argv and argv[argv.index('--cameras_apply_modifiers') + 1] == 'True':
+    # On the Cameras collection, for each camera, apply their modifiers and constraints
+    cameras_collection = bpy.data.collections.get("Cameras")
+    if cameras_collection:
+        for obj in cameras_collection.objects:
+            if obj.type == 'CAMERA':
+                # Select and set active object
+                bpy.context.view_layer.objects.active = obj
+                obj.select_set(True)
+
+                for mod in obj.modifiers:
+                    bpy.ops.modifier.apply(modifier=mod.name)
+                for con in obj.constraints:
+                    bpy.ops.constraint.apply(constraint=con.name)
+
+                # Deselect object
+                obj.select_set(False)
 
 # Optional: Render the scene
 render = 'True'
@@ -78,6 +98,7 @@ if render == 'True':
         samples = int(argv[argv.index('--render_samples') + 1])
         camera_renderer.set_render_samples(samples)
 
+    print("Rendering all cameras...")
     camera_renderer.render_all_cameras()
 
 # Save the .blend file with the rendered results as a new file
