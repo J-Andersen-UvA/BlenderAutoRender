@@ -1,8 +1,100 @@
 import bpy
 import sys
 
-def import_glb(filepath):
-    bpy.ops.import_scene.gltf(filepath=filepath, bone_dir='TEMPERANCE')
+class GLBImporter:
+    def __init__(self, filepath):
+        self.filepath = filepath
+        self.collection_name = "importedAnimation"
+        self.action_body = None
+        self.action = None
+        self.shape_key_action = None
+
+    def import_glb(self):
+        bpy.ops.import_scene.gltf(filepath=self.filepath, bone_dir='TEMPERANCE')
+        self.add_to_collection()
+        self.find_action_body()
+        self.find_shape_key_animation()
+
+    def add_to_collection(self):
+        if self.collection_name not in bpy.data.collections:
+            new_collection = bpy.data.collections.new(self.collection_name)
+            bpy.context.scene.collection.children.link(new_collection)
+        else:
+            new_collection = bpy.data.collections[self.collection_name]
+
+        for obj in bpy.context.selected_objects:
+            bpy.context.scene.collection.objects.unlink(obj)
+            new_collection.objects.link(obj)
+
+    def find_action_body(self):
+        if self.collection_name in bpy.data.collections:
+            collection = bpy.data.collections[self.collection_name]
+            for obj in collection.objects:
+                if obj.type == 'ARMATURE':
+                    self.action_body = obj  # Store the armature
+                    
+                    # Check if it has animation data and an action
+                    if obj.animation_data and obj.animation_data.action:
+                        self.action = obj.animation_data.action
+                    else:
+                        self.action = None  # No action found
+                        raise ValueError("No action found for the armature")
+
+                    break  # Stop after finding the first armature
+
+    def find_shape_key_animation(self):
+        """Finds and stores the animation action for shape keys in the imported mesh."""
+        if self.collection_name in bpy.data.collections:
+            collection = bpy.data.collections[self.collection_name]
+
+            for obj in collection.objects:
+                if obj.type == 'MESH' and obj.data.shape_keys:  # Mesh must have shape keys
+                    self.shape_key_action = obj.data.shape_keys.animation_data.action
+    
+    def remove_collection_and_contents(self):
+        if self.collection_name in bpy.data.collections:
+            collection = bpy.data.collections[self.collection_name]
+            bpy.data.collections.remove(collection)
+
+class AnimationTransfer:
+    def __init__(self, source_action, source_shape_key_action, target_avatar_collection):
+        self.source_action = source_action
+        self.source_shape_key_action = source_shape_key_action
+        self.target_avatar_collection = target_avatar_collection
+
+    def check_validity(self):
+        validity = True
+
+        if not self.source_shape_key_action.data.shape_keys:
+            print(f"Source object '{self.source_shape_key_action.name}' has no shape key animation.")
+            validity = False
+
+        for obj in self.target_avatar_collection.objects:
+            if obj.type == 'MESH' and obj.data.shape_keys:  # Mesh must have shape keys
+                self.target_avatar = obj
+                break
+            else:
+                print(f"Target collection '{self.target_avatar_collection.name}' has no mesh objects with shape keys.")
+                validity = False
+
+        if not self.source_action:
+            print(f"Source object '{self.source_action.name}' has no animation data.")
+            validity = False
+
+        return validity
+
+    def transfer_shape_key_animation(self):
+        """Copies shape key animation from source_obj to target_obj while preserving F-Curves."""
+        # Set target avatar shape keys to match source shape keys
+        for obj in self.target_avatar_collection.objects:
+            if obj.type == 'MESH' and obj.data.shape_keys:  # Mesh must have shape keys
+                obj.data.shape_keys.animation_data.action = self.source_shape_key_action
+
+    def transfer_bone_animation(self):
+        """Copies bone animation from source_obj to target_obj while preserving F-Curves."""
+        # Set target avatar action to match source action
+        self.target_avatar.animation_data.action = self.source_action
+
 
 if __name__ == "__main__":
     if len(sys.argv) < 2:
@@ -10,4 +102,5 @@ if __name__ == "__main__":
         sys.exit(1)
     
     glb_filepath = sys.argv[sys.argv.index("--") + 1]
-    import_glb(glb_filepath)
+    importer = GLBImporter(glb_filepath)
+    importer.import_glb()
