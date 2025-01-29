@@ -3,7 +3,7 @@ import sys
 import subprocess
 import argparse
 
-def launch_blender(blender_path, scene_path, input_folder, output_folder, deheaded=True, render_engine="CYCLES", background=None, timestretch=None, frame_range=None, output_format='PNG', render_resolution=[1920, 1080], render_samples=128, render=True, cameras_apply_modifiers='True'):
+def launch_blender(blender_path, scene_path, input_folder, output_folder, deheaded=True, render_engine="CYCLES", background=None, timestretch=None, frame_range=None, output_format='PNG', render_resolution=[1920, 1080], render_samples=128, render=True, cameras_apply_modifiers='True', compute_device='OPTIX'):
     for file_name in os.listdir(input_folder):
         if file_name.endswith('.glb'):
             file_path = os.path.join(input_folder, file_name)
@@ -54,6 +54,9 @@ def launch_blender(blender_path, scene_path, input_folder, output_folder, dehead
             # Add optional cameras apply modifiers
             command.extend(['--cameras_apply_modifiers', str(cameras_apply_modifiers)])
 
+            # Add optional compute device
+            command.extend(['--compute_device', str(compute_device)])
+
             print(f"Running Blender command:\n{command}\n")
             # Run the Blender command for this .glb file
             subprocess.run(command)
@@ -79,6 +82,7 @@ def main():
     parser.add_argument('--render_samples', type=int, help='Set the render samples for Cycles rendering', default=128)
     parser.add_argument('--render', type=str, help='debug value to set if no render is prefered', default='True')
     parser.add_argument('--cameras_apply_modifiers', type=str, help='Apply modifiers and constraints to cameras', default='True')
+    parser.add_argument('--compute_device', type=str, help='Set the compute device for rendering', default='OPTIX', choices=['CUDA', 'OPTIX', 'OPENCL', 'NONE'])
 
     args = parser.parse_args()
 
@@ -160,6 +164,10 @@ def main():
     
     if args.cameras_apply_modifiers.lower() not in ['False', 'false']:
         args.cameras_apply_modifiers = 'True'
+
+    if args.compute_device not in ['CUDA', 'OPTIX', 'OPENCL', 'NONE']:
+        print("Error: 'compute_device' argument must be 'CUDA', 'OPTIX', 'OPENCL', or 'NONE'")
+        sys.exit(1)
     
     # Launch Blender for each .glb file
     launch_blender(
@@ -176,7 +184,8 @@ def main():
         render_resolution=args.render_resolution,
         render_samples=args.render_samples,
         render=args.render,
-        cameras_apply_modifiers=args.cameras_apply_modifiers
+        cameras_apply_modifiers=args.cameras_apply_modifiers,
+        compute_device=args.compute_device
     )
 
 if __name__ == "__main__":

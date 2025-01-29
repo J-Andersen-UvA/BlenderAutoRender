@@ -5,7 +5,7 @@ import argparse
 import sys
 
 class CamerasRenderer:
-    def __init__(self, output_dir, render_engine="CYCLES", output_format="PNG"):
+    def __init__(self, output_dir, render_engine="CYCLES", output_format="PNG", compute_device_type='OPTIX'):
         """
         Initialize the CamerasRenderer with an output directory and render engine.
 
@@ -14,6 +14,7 @@ class CamerasRenderer:
         """
         self.base_output_dir = output_dir
         self.scene = bpy.context.scene
+        self.compute_device_type = compute_device_type
         self.set_render_engine(render_engine)
         self.output_dir = self.__create_incremental_output_dir()
         self.set_output_format(output_format)
@@ -35,6 +36,27 @@ class CamerasRenderer:
         if render_engine.upper() not in ["CYCLES", "BLENDER_EEVEE_NEXT", "BLENDER_WORKBENCH"]:
             raise ValueError("Invalid render engine. Choose 'CYCLES' or 'BLENDER_EEVEE' or 'BLENDER_WORKBENCH'.")
         self.scene.render.engine = render_engine.upper()
+
+        if render_engine.upper() == "CYCLES":
+            self.__enable_gpu_rendering()
+
+    def __enable_gpu_rendering(self):
+        # Check if CUDA, OptiX, or HIP is available
+        prefs = bpy.context.preferences.addons['cycles'].preferences
+        devices = prefs.devices
+
+        # Enable GPU compute
+        if self.compute_device_type not in ['CUDA', 'OPTIX', 'HIP']:
+            print("Invalid compute device type. Choose 'CUDA', 'OPTIX', or 'HIP'.\nFalling back to 'OPTIX'.")
+            prefs.compute_device_type = 'OPTIX'
+        else:
+            prefs.compute_device_type = self.compute_device_type
+
+        bpy.context.scene.cycles.device = 'GPU'
+
+        # Activate all GPU devices
+        for device in devices:
+            device.use = True
 
     def set_resolution(self, width, height):
         """
