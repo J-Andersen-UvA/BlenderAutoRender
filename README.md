@@ -37,6 +37,7 @@ This section describes all the command-line arguments for the Blender Auto Rende
 | --render_samples  | Set the number of render samples for Cycles rendering.                                           | --render_samples 128       |
 | --render_engine   | Choose the render engine: CYCLES or BLENDER_EEVEE.                                               | --render_engine CYCLES     |
 | --render  |   Debug flag to turn off rendering (e.g. False false) | --render False |
+| --cameras_apply_modifiers | option to apply camera modifiers to the cameras in the collection. Useful when you want modifiers and constraints only to matter for the first frame (e.g. set initial location). Default: True| --cameras_apply_modifiers False |
 
 ## Example full command
 ```bash
