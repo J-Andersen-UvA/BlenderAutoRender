@@ -3,7 +3,7 @@ import sys
 import subprocess
 import argparse
 
-def launch_blender(blender_path, scene_path, input_folder, output_folder, deheaded=True, render_engine="CYCLES", background=None, timestretch=None, frame_range=None, output_format='PNG', render_resolution=[1920, 1080], render_samples=128, render=True):
+def launch_blender(blender_path, scene_path, input_folder, output_folder, deheaded=True, render_engine="CYCLES", background=None, timestretch=None, frame_range=None, output_format='PNG', render_resolution=[1920, 1080], render_samples=128, render=True, cameras_apply_modifiers='True'):
     for file_name in os.listdir(input_folder):
         if file_name.endswith('.glb'):
             file_path = os.path.join(input_folder, file_name)
@@ -51,6 +51,9 @@ def launch_blender(blender_path, scene_path, input_folder, output_folder, dehead
             # Add optional render
             command.extend(['--render', str(render)])
 
+            # Add optional cameras apply modifiers
+            command.extend(['--cameras_apply_modifiers', str(cameras_apply_modifiers)])
+
             print(f"Running Blender command:\n{command}\n")
             # Run the Blender command for this .glb file
             subprocess.run(command)
@@ -75,6 +78,7 @@ def main():
     parser.add_argument('--render_resolution', type=int, nargs=2, metavar=('WIDTH', 'HEIGHT'), help='Set the render resolution', default=[1920, 1080])
     parser.add_argument('--render_samples', type=int, help='Set the render samples for Cycles rendering', default=128)
     parser.add_argument('--render', type=str, help='debug value to set if no render is prefered', default='True')
+    parser.add_argument('--cameras_apply_modifiers', type=str, help='Apply modifiers and constraints to cameras', default='True')
 
     args = parser.parse_args()
 
@@ -154,6 +158,9 @@ def main():
         args.render = 'False'
         print("Rendering is set to FALSE, no render will be done")
     
+    if args.cameras_apply_modifiers.lower() not in ['False', 'false']:
+        args.cameras_apply_modifiers = 'True'
+    
     # Launch Blender for each .glb file
     launch_blender(
         blender_path=blender_path,
@@ -169,6 +176,7 @@ def main():
         render_resolution=args.render_resolution,
         render_samples=args.render_samples,
         render=args.render,
+        cameras_apply_modifiers=args.cameras_apply_modifiers
     )
 
 if __name__ == "__main__":
