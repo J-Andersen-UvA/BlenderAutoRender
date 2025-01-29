@@ -1,6 +1,17 @@
 # BlenderAutoRender
 With the amount of animations we have gathered, it would be absolutely painful to render them all by hand. So lets automate this process :) 
 
+---
+
+## Notes
+### Collections
+We use the following collection names in order to find relevant objects in blender:
+- mainAvatar
+  Used to find the main avatar to be rendered on.
+- importedAnimation
+  Used to find the animation avatar and its relevant animations to be copied over to the main avatar.
+
+---
 ## Command-Line Arguments
 This section describes all the command-line arguments for the Blender Auto Render Script. Use these arguments to customize the rendering process.
 
@@ -25,3 +36,9 @@ This section describes all the command-line arguments for the Blender Auto Rende
 | --render_resolution | Set the render resolution (width and height).                                                 | --render_resolution 1920 1080 |
 | --render_samples  | Set the number of render samples for Cycles rendering.                                           | --render_samples 128       |
 | --render_engine   | Choose the render engine: CYCLES or BLENDER_EEVEE.                                               | --render_engine CYCLES     |
+| --render  |   Debug flag to turn off rendering (e.g. False false) | --render False |
+
+## Example full command
+```bash
+<python_path> <blender_path> --frame_range 250 350 --timestretch 60 60 --output_format FFMPEG --input ./in --output ./out
+```
