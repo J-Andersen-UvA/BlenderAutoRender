@@ -61,7 +61,7 @@ def main():
     parser.add_argument('--input', type=str, default='./in', help='Input folder containing animation files')
     parser.add_argument('--output', type=str, default='./out', help='Output folder for rendered files')
     parser.add_argument('--deheaded', type=str, default='true', help='Run Blender in background mode')
-    parser.add_argument("--render_engine", type=str, default="CYCLES", choices=["CYCLES", "BLENDER_EEVEE"],
+    parser.add_argument("--render_engine", type=str, default="CYCLES", choices=["CYCLES", "BLENDER_EEVEE_NEXT", "BLENDER_WORKBENCH", "EEVEE", "BLENDER_EEVEE"],
                         help="Render engine to use (default: CYCLES).")
 
     # Optional arguments
@@ -103,9 +103,11 @@ def main():
     else:
         args.deheaded = args.deheaded.lower() == 'true'
     
-    if args.render_engine not in ['CYCLES', 'BLENDER_EEVEE']:
+    if args.render_engine not in ['CYCLES', 'BLENDER_EEVEE', 'BLENDER_EEVEE_NEXT', 'BLENDER_WORKBENCH', 'EEVEE']:
         print("Error: 'render_engine' argument must be 'CYCLES' or 'BLENDER_EEVEE'")
         sys.exit(1)
+    if args.render_engine in ['BLENDER_EEVEE', 'EEVEE']:
+        args.render_engine = 'BLENDER_EEVEE_NEXT'
     
     if args.background and not os.path.isfile(args.background):
         print(f"Background file not found: {args.background}")
