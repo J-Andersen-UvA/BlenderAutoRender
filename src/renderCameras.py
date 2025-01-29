@@ -32,8 +32,8 @@ class CamerasRenderer:
 
         :param render_engine: Render engine to use ("CYCLES" or "BLENDER_EEVEE").
         """
-        if render_engine.upper() not in ["CYCLES", "BLENDER_EEVEE"]:
-            raise ValueError("Invalid render engine. Choose 'CYCLES' or 'BLENDER_EEVEE'.")
+        if render_engine.upper() not in ["CYCLES", "BLENDER_EEVEE_NEXT", "BLENDER_WORKBENCH"]:
+            raise ValueError("Invalid render engine. Choose 'CYCLES' or 'BLENDER_EEVEE' or 'BLENDER_WORKBENCH'.")
         self.scene.render.engine = render_engine.upper()
 
     def set_resolution(self, width, height):

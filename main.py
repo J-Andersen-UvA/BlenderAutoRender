@@ -104,7 +104,7 @@ def main():
         args.deheaded = args.deheaded.lower() == 'true'
     
     if args.render_engine not in ['CYCLES', 'BLENDER_EEVEE', 'BLENDER_EEVEE_NEXT', 'BLENDER_WORKBENCH', 'EEVEE']:
-        print("Error: 'render_engine' argument must be 'CYCLES' or 'BLENDER_EEVEE'")
+        print("Error: 'render_engine' argument must be 'CYCLES' or 'BLENDER_EEVEE' or 'BLENDER_EEVEE_NEXT' or 'BLENDER_WORKBENCH' or 'EEVEE'")
         sys.exit(1)
     if args.render_engine in ['BLENDER_EEVEE', 'EEVEE']:
         args.render_engine = 'BLENDER_EEVEE_NEXT'
