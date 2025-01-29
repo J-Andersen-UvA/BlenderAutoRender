@@ -8,6 +8,7 @@ class GLBImporter:
         self.action_body = None
         self.action = None
         self.shape_key_action = None
+        self.animation_range = None
         if filepath:
             self.import_glb()
 
@@ -60,6 +61,26 @@ class GLBImporter:
         if self.collection_name in bpy.data.collections:
             collection = bpy.data.collections[self.collection_name]
             bpy.data.collections.remove(collection)
+
+    # Using the action, find the start and end frames of the animation
+    def get_animation_range(self):
+        """Returns the start and end frames of an animation action."""
+        if not self.action or not self.action.fcurves:
+            print("No animation data found.")
+            return None, None
+
+        # Collect all keyframe points from all F-Curves
+        keyframes = [kp.co.x for fc in self.action.fcurves for kp in fc.keyframe_points]
+
+        if not keyframes:
+            print("No keyframes found in action.")
+            return None, None
+
+        # Find the min and max keyframe values
+        start_frame = int(min(keyframes))
+        end_frame = int(max(keyframes))
+
+        return start_frame, end_frame
 
 class AnimationTransfer:
     def __init__(self, source_action, source_shape_key_action, target_avatar_collection):

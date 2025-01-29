@@ -44,6 +44,8 @@ print("Importing the following .glb file:", glb_file)
 importer = ia.GLBImporter(glb_file)
 importer.find_action_body()
 importer.find_shape_key_animation()
+start_frame, end_frame = importer.get_animation_range()
+print("frame range:", start_frame, end_frame)
 print("Imported the following animations:", importer.action, importer.shape_key_action)
 transfer = ia.AnimationTransfer(importer.action, importer.shape_key_action, bpy.data.collections["mainAvatar"])
 print("Transferring animations...")
@@ -83,6 +85,8 @@ if render == 'True':
     if '--frame_range' in argv:
         start_frame = int(argv[argv.index('--frame_range') + 1])
         end_frame = int(argv[argv.index('--frame_range') + 2])
+        camera_renderer.set_frame_range(start_frame, end_frame)
+    else:
         camera_renderer.set_frame_range(start_frame, end_frame)
 
     if '--output_format' in argv:
