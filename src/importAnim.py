@@ -2,15 +2,20 @@ import bpy
 import sys
 
 class GLBImporter:
-    def __init__(self, filepath):
+    def __init__(self, filepath=None):
         self.filepath = filepath
         self.collection_name = "importedAnimation"
         self.action_body = None
         self.action = None
         self.shape_key_action = None
+        if filepath:
+            self.import_glb()
 
     def import_glb(self):
-        bpy.ops.import_scene.gltf(filepath=self.filepath, bone_dir='TEMPERANCE')
+        if not self.filepath:
+            raise ValueError("No file path provided for GLB import")
+
+        bpy.ops.import_scene.gltf(filepath=self.filepath, bone_heuristic='TEMPERANCE')
         self.add_to_collection()
         self.find_action_body()
         self.find_shape_key_animation()
@@ -92,9 +97,14 @@ class AnimationTransfer:
 
     def transfer_bone_animation(self):
         """Copies bone animation from source_obj to target_obj while preserving F-Curves."""
+        # Get target avatar armature
+        for obj in self.target_avatar_collection.objects:
+            if obj.type == 'ARMATURE':
+                self.target_avatar = obj
+                break
+
         # Set target avatar action to match source action
         self.target_avatar.animation_data.action = self.source_action
-
 
 if __name__ == "__main__":
     if len(sys.argv) < 2:
@@ -104,3 +114,13 @@ if __name__ == "__main__":
     glb_filepath = sys.argv[sys.argv.index("--") + 1]
     importer = GLBImporter(glb_filepath)
     importer.import_glb()
+
+
+# # Second example ussage:
+# importer = GLBImporter()
+# importer.find_action_body()
+# importer.find_shape_key_animation()
+# print(importer.action, importer.shape_key_action)
+# print()
+# transfer = AnimationTransfer(importer.action, importer.shape_key_action, bpy.data.collections["mainAvatar"])
+# transfer.transfer_bone_animation()

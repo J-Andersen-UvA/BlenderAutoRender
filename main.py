@@ -3,7 +3,7 @@ import sys
 import subprocess
 import argparse
 
-def launch_blender(blender_path, scene_path, input_folder, output_folder, deheaded=True, render_engine="CYCLES", background=None, timestretch=None, frame_range=None, output_format='PNG', render_resolution=[1920, 1080], render_samples=128):
+def launch_blender(blender_path, scene_path, input_folder, output_folder, deheaded=True, render_engine="CYCLES", background=None, timestretch=None, frame_range=None, output_format='PNG', render_resolution=[1920, 1080], render_samples=128, render=True):
     for file_name in os.listdir(input_folder):
         if file_name.endswith('.glb'):
             file_path = os.path.join(input_folder, file_name)
@@ -48,6 +48,9 @@ def launch_blender(blender_path, scene_path, input_folder, output_folder, dehead
             # Add optional render samples
             command.extend(['--render_samples', str(render_samples)])
 
+            # Add optional render
+            command.extend(['--render', str(render)])
+
             print(f"Running Blender command:\n{command}\n")
             # Run the Blender command for this .glb file
             subprocess.run(command)
@@ -71,6 +74,7 @@ def main():
     parser.add_argument('--output_format', type=str, default='PNG', help='Output file format for rendered images', choices=['PNG', 'JPEG', 'WebP', 'OPEN_EXR', 'FFMPEG'])
     parser.add_argument('--render_resolution', type=int, nargs=2, metavar=('WIDTH', 'HEIGHT'), help='Set the render resolution', default=[1920, 1080])
     parser.add_argument('--render_samples', type=int, help='Set the render samples for Cycles rendering', default=128)
+    parser.add_argument('--render', type=str, help='debug value to set if no render is prefered', default='True')
 
     args = parser.parse_args()
 
@@ -146,6 +150,10 @@ def main():
         print("Error: Render samples must be a positive integer")
         sys.exit(1)
 
+    if args.render == 'False' or args.render == 'false':
+        args.render = 'False'
+        print("Rendering is set to FALSE, no render will be done")
+    
     # Launch Blender for each .glb file
     launch_blender(
         blender_path=blender_path,
@@ -160,6 +168,7 @@ def main():
         output_format=args.output_format,
         render_resolution=args.render_resolution,
         render_samples=args.render_samples,
+        render=args.render,
     )
 
 if __name__ == "__main__":
