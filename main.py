@@ -57,6 +57,10 @@ def launch_blender(blender_path, scene_path, input_folder, output_folder, dehead
             # Add optional compute device
             command.extend(['--compute_device', str(compute_device)])
 
+            # File name
+            file_name = file_name.split('.')[0]
+            command.extend(['--file_name', file_name])
+
             print(f"Running Blender command:\n{command}\n")
             # Run the Blender command for this .glb file
             subprocess.run(command)
