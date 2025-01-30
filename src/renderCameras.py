@@ -5,7 +5,7 @@ import argparse
 import sys
 
 class CamerasRenderer:
-    def __init__(self, output_dir, render_engine="CYCLES", output_format="PNG", compute_device_type='OPTIX'):
+    def __init__(self, output_dir, render_engine="CYCLES", output_format="PNG", compute_device_type='OPTIX', incr_folder_prefix=""):
         """
         Initialize the CamerasRenderer with an output directory and render engine.
 
@@ -16,7 +16,7 @@ class CamerasRenderer:
         self.scene = bpy.context.scene
         self.compute_device_type = compute_device_type
         self.set_render_engine(render_engine)
-        self.output_dir = self.__create_incremental_output_dir()
+        self.output_dir = self.__create_incremental_output_dir(incr_folder_prefix)
         self.set_output_format(output_format)
 
     def set_output_format(self, output_format):
@@ -83,7 +83,7 @@ class CamerasRenderer:
 
         self.scene.cycles.samples = samples
 
-    def __create_incremental_output_dir(self):
+    def __create_incremental_output_dir(self, incr_folder_prefix=""):
         """
         Create an incremental output directory to avoid overwriting previous renders.
 
@@ -95,9 +95,11 @@ class CamerasRenderer:
             os.makedirs(base_path)
 
         # Find the next incremental folder
+        path = os.path.join(base_path, incr_folder_prefix)
         i = 1
         while True:
-            incremental_path = os.path.join(base_path, str(i))
+            incr_str = f"render_{i}"
+            incremental_path = os.path.join(path, incr_str)
             if not os.path.exists(incremental_path):
                 os.makedirs(incremental_path)
                 return incremental_path

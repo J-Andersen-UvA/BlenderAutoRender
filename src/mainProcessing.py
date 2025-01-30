@@ -82,8 +82,11 @@ if render == 'True':
     if '--compute_device' in argv:
         compute_device = argv[argv.index('--compute_device') + 1]
 
+    if '--file_name' in argv:
+        file_name = argv[argv.index('--file_name') + 1]
+
     # Render the scene
-    camera_renderer = rc.CamerasRenderer(output_folder, render_engine, compute_device_type=compute_device)
+    camera_renderer = rc.CamerasRenderer(output_folder, render_engine, compute_device_type=compute_device, incr_folder_prefix=file_name)
 
     # Optional: Set the frame range
     if '--frame_range' in argv:
