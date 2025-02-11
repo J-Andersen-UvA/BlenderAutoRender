@@ -38,6 +38,8 @@ This section describes all the command-line arguments for the Blender Auto Rende
 | --render_engine   | Choose the render engine: CYCLES or BLENDER_EEVEE.                                               | --render_engine CYCLES     |
 | --render  |   Debug flag to turn off rendering (e.g. False false) | --render False |
 | --cameras_apply_modifiers | option to apply camera modifiers to the cameras in the collection. Useful when you want modifiers and constraints only to matter for the first frame (e.g. set initial location). Default: True| --cameras_apply_modifiers False |
+| --compute_device | Set the compute device for rendering. Choose from 'CUDA', 'OPTIX', 'OPENCL', 'NONE'.               | --compute_device OPTIX     |
+| --save_blend     | Save the .blend file with the rendered results as a new file. Set to 'True' or 'False'.            | --save_blend False         |
 
 ## Example full command
 ```bash
