@@ -1,3 +1,15 @@
+bl_info = {
+    "name": "GLB Importer and Animator",
+    "blender": (3, 0, 0),
+    "category": "Import-Export",
+    "author": "Your Name",
+    "version": (1, 1),
+    "description": "A tool to import GLB files and transfer animations to target avatars",
+    "location": "View3D > Sidebar > GLB Importer",
+    "warning": "",
+    "support": "COMMUNITY",
+}
+
 import bpy
 import sys
 
