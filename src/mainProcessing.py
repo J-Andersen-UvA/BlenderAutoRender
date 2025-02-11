@@ -87,6 +87,7 @@ if render == 'True':
 
     # Render the scene
     camera_renderer = rc.CamerasRenderer(output_folder, render_engine, compute_device_type=compute_device, incr_folder_prefix=file_name)
+    output_folder = camera_renderer.output_dir
 
     # Optional: Set the frame range
     if '--frame_range' in argv:
@@ -111,6 +112,17 @@ if render == 'True':
 
     print("Rendering all cameras...")
     camera_renderer.render_all_cameras()
+
+# Optional: Save the .blend file
+if '--save_blend' in argv and argv[argv.index('--save_blend') + 1] == 'True':
+    blend_output_file = os.path.join(output_folder, os.path.basename(glb_file).replace('.glb', '.blend'))
+    # Check if file exists, if so, increment the name
+    i = 1
+    while os.path.exists(blend_output_file):
+        blend_output_file = blend_output_file.replace('.blend', f'_{i}.blend')
+        i += 1
+    bpy.ops.wm.save_as_mainfile(filepath=blend_output_file)
+    print("Saved the .blend file at the following location:", blend_output_file)
 
 # Save the .blend file with the rendered results as a new file
 # blend_output_file = os.path.join(output_folder, os.path.basename(glb_file).replace('.glb', '.blend'))
