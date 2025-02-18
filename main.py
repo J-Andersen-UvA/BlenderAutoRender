@@ -3,9 +3,9 @@ import sys
 import subprocess
 import argparse
 
-def launch_blender(blender_path, scene_path, input_folder, output_folder, deheaded=True, render_engine="CYCLES", background=None, timestretch=None, frame_range=None, output_format='PNG', render_resolution=[1920, 1080], render_samples=128, render=True, cameras_apply_modifiers='True', compute_device='OPTIX', save_blend='False'):
+def launch_blender(blender_path, scene_path, input_folder, output_folder, deheaded=True, render_engine="CYCLES", background=None, timestretch=None, frame_range=None, output_format='PNG', render_resolution=[1920, 1080], render_samples=128, render=True, cameras_apply_modifiers='True', compute_device='OPTIX', save_blend='False', fbx_import='False'):
     for file_name in os.listdir(input_folder):
-        if file_name.endswith('.glb'):
+        if (file_name.endswith('.glb') and fbx_import == 'False') or (fbx_import == 'True' and file_name.endswith('.fbx')):
             file_path = os.path.join(input_folder, file_name)
             
             # Create the command to launch Blender
@@ -20,7 +20,7 @@ def launch_blender(blender_path, scene_path, input_folder, output_folder, dehead
             command.extend([
                 '--python', '/src/mainProcessing.py',  # The main script for handling all operations
                 '--',  # Pass additional arguments after this
-                file_path,  # Path to the .glb file
+                file_path,  # Path to the .glb file to render
                 output_folder,  # Output folder for saving results
                 render_engine,  # Render engine to use
             ])
@@ -91,6 +91,7 @@ def main():
     parser.add_argument('--cameras_apply_modifiers', type=str, help='Apply modifiers and constraints to cameras', default='True')
     parser.add_argument('--compute_device', type=str, help='Set the compute device for rendering', default='OPTIX', choices=['CUDA', 'OPTIX', 'OPENCL', 'NONE'])
     parser.add_argument('--save_blend', type=str, help='Save the .blend file with the rendered results as a new file', default='False', choices=['True', 'False'])
+    parser.add_argument('--fbx_import', type=str, help='Import fbx instead of glb', default='False', choices=['True', 'False'])
 
     args = parser.parse_args()
 
@@ -180,6 +181,10 @@ def main():
     if args.save_blend.lower() not in ['True', 'False', 'true', 'false']:
         print("Error: 'save_blend' argument must be 'True' or 'False'")
         sys.exit(1)
+
+    if args.fbx_import.lower() not in ['True', 'False', 'true', 'false']:
+        print("Error: 'fbx_import' argument must be 'True' or 'False'")
+        sys.exit(1)
     
     # Launch Blender for each .glb file
     launch_blender(
@@ -198,7 +203,8 @@ def main():
         render=args.render,
         cameras_apply_modifiers=args.cameras_apply_modifiers,
         compute_device=args.compute_device,
-        save_blend=args.save_blend
+        save_blend=args.save_blend,
+        fbx_import=args.fbx_import
     )
 
 if __name__ == "__main__":

@@ -41,7 +41,7 @@ if '--timestretch' in argv:
 
 # Load the .glb file, load all relevant animations, and transfer them to the target avatar. Then remove the imported collection
 print("Importing the following .glb file:", glb_file)
-importer = ia.GLBImporter(glb_file)
+importer = ia.AnimImporter(glb_file)
 importer.find_action_body()
 importer.find_shape_key_animation()
 start_frame, end_frame = importer.get_animation_range()

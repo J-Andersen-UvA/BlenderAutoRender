@@ -36,13 +36,12 @@ class IMPORT_OT_GLBBrowser(bpy.types.Operator):
             self.report({'ERROR'}, "No file selected")
             return {'CANCELLED'}
         
-        if not self.filepath.lower().endswith(".glb"):
-            self.report({'ERROR'}, "Please select a .glb file")
+        if not self.filepath.lower().endswith(".glb") and not self.filepath.lower().endswith(".fbx"):
+            self.report({'ERROR'}, "Please select a .glb or .fbx file")
             return {'CANCELLED'}
 
         # Import the GLB
-        importer = importAnim.GLBImporter(filepath=self.filepath)
-        importer.import_glb()
+        importer = importAnim.AnimImporter(filepath=self.filepath)
         self.report({'INFO'}, "GLB Imported Successfully!")
         return {'FINISHED'}
 
@@ -58,7 +57,7 @@ class RETARGET_FUNCS(bpy.types.Operator):
     bl_options = {'REGISTER', 'UNDO'}
 
     def execute(self, context):
-        importer = importAnim.GLBImporter(filepath="")
+        importer = importAnim.AnimImporter(filepath="")
         importer.find_action_body()
         importer.find_shape_key_animation()
         print(importer.action, importer.shape_key_action)
@@ -68,6 +67,18 @@ class RETARGET_FUNCS(bpy.types.Operator):
         transfer.transfer_shape_key_animation()
         importer.remove_collection_and_contents()
         self.report({'INFO'}, "Retarget done!")
+        return {'FINISHED'}
+
+class RETARGET_NODE_ANIM(bpy.types.Operator):
+    bl_idname = "retarget.node_anim"
+    bl_label = "Node Anim"
+    bl_description = "Retarget node animations to armature"
+    bl_options = {'REGISTER', 'UNDO'}
+
+    def execute(self, context):
+        transfer = importAnim.AnimationTransfer(None, None, bpy.data.collections["mainAvatar"])
+        transfer.link_animation_nodes_to_armature(collection_name="importedAnimation")
+        self.report({'INFO'}, "Node animations retargeted!")
         return {'FINISHED'}
 
 # UI Panel
@@ -82,17 +93,20 @@ class VIEW3D_PT_GLBImporterPanel(bpy.types.Panel):
         layout = self.layout
         layout.operator("import.glb_browser", text="Import GLB")
         layout.operator("retarget.retarget_and_remove", text="Run retarget/remap")
+        layout.operator("retarget.node_anim", text="Retarget node anims to armature")
 
 # Register & Unregister
 def register():
     bpy.utils.register_class(IMPORT_OT_GLBBrowser)
     bpy.utils.register_class(RETARGET_FUNCS)
     bpy.utils.register_class(VIEW3D_PT_GLBImporterPanel)
+    bpy.utils.register_class(RETARGET_NODE_ANIM)
 
 def unregister():
     bpy.utils.unregister_class(IMPORT_OT_GLBBrowser)
     bpy.utils.unregister_class(RETARGET_FUNCS)
     bpy.utils.unregister_class(VIEW3D_PT_GLBImporterPanel)
+    bpy.utils.unregister_class(RETARGET_NODE_ANIM)
 
 if __name__ == "__main__":
     register()

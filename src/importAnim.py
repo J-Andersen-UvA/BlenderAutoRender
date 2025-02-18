@@ -12,8 +12,10 @@ bl_info = {
 
 import bpy
 import sys
+from bpy.props import StringProperty
+from bpy.types import Operator
 
-class GLBImporter:
+class AnimImporter:
     def __init__(self, filepath=None):
         self.filepath = filepath
         self.collection_name = "importedAnimation"
@@ -22,13 +24,29 @@ class GLBImporter:
         self.shape_key_action = None
         self.animation_range = None
         if filepath:
-            self.import_glb()
+            if filepath.lower().endswith(".glb"):
+                self.import_glb()
+            elif filepath.lower().endswith(".fbx"):
+                self.import_fbx()
 
     def import_glb(self):
+        # Make sure to select the scene collection before importing
+        bpy.context.view_layer.active_layer_collection = bpy.context.view_layer.layer_collection
         if not self.filepath:
             raise ValueError("No file path provided for GLB import")
 
         bpy.ops.import_scene.gltf(filepath=self.filepath, bone_heuristic='TEMPERANCE')
+        self.add_to_collection()
+        self.find_action_body()
+        self.find_shape_key_animation()
+
+    def import_fbx(self):
+        # Make sure to select the scene collection before importing
+        bpy.context.view_layer.active_layer_collection = bpy.context.view_layer.layer_collection
+        if not self.filepath:
+            raise ValueError("No file path provided for FBX import")
+
+        bpy.ops.import_scene.fbx(filepath=self.filepath, automatic_bone_orientation=True)
         self.add_to_collection()
         self.find_action_body()
         self.find_shape_key_animation()
@@ -41,7 +59,8 @@ class GLBImporter:
             new_collection = bpy.data.collections[self.collection_name]
 
         for obj in bpy.context.selected_objects:
-            bpy.context.scene.collection.objects.unlink(obj)
+            if obj.name in bpy.context.scene.collection.objects:
+                bpy.context.scene.collection.objects.unlink(obj)
             new_collection.objects.link(obj)
 
     def find_action_body(self):
@@ -100,26 +119,36 @@ class AnimationTransfer:
         self.source_shape_key_action = source_shape_key_action
         self.target_avatar_collection = target_avatar_collection
 
-    def check_validity(self):
-        validity = True
-
-        if not self.source_shape_key_action.data.shape_keys:
-            print(f"Source object '{self.source_shape_key_action.name}' has no shape key animation.")
-            validity = False
-
+        self.target_avatar = self.get_target_avatar()
+    
+    def get_target_avatar(self):
         for obj in self.target_avatar_collection.objects:
-            if obj.type == 'MESH' and obj.data.shape_keys:  # Mesh must have shape keys
+            if obj.type == 'ARMATURE':
                 self.target_avatar = obj
-                break
-            else:
-                print(f"Target collection '{self.target_avatar_collection.name}' has no mesh objects with shape keys.")
-                validity = False
+                return
+        
+        print(f"No armature found in collection '{self.target_avatar_collection.name}'")
 
-        if not self.source_action:
-            print(f"Source object '{self.source_action.name}' has no animation data.")
-            validity = False
+    # def check_validity(self):
+    #     validity = True
 
-        return validity
+    #     if not self.source_shape_key_action.data.shape_keys:
+    #         print(f"Source object '{self.source_shape_key_action.name}' has no shape key animation.")
+    #         validity = False
+
+    #     for obj in self.target_avatar_collection.objects:
+    #         if obj.type == 'MESH' and obj.data.shape_keys:  # Mesh must have shape keys
+    #             self.target_avatar = obj
+    #             break
+    #         else:
+    #             print(f"Target collection '{self.target_avatar_collection.name}' has no mesh objects with shape keys.")
+    #             validity = False
+
+    #     if not self.source_action:
+    #         print(f"Source object '{self.source_action.name}' has no animation data.")
+    #         validity = False
+
+    #     return validity
 
     def transfer_shape_key_animation(self):
         """Copies shape key animation from source_obj to target_obj while preserving F-Curves."""
@@ -136,8 +165,58 @@ class AnimationTransfer:
                 self.target_avatar = obj
                 break
 
+        if not self.target_avatar:
+            print(f"No armature found in collection '{self.target_avatar_collection.name}'")
+            return
+        
+        # Check if the target avatar has animation data
+        if not self.target_avatar.animation_data:
+            self.target_avatar.animation_data_create()
+
         # Set target avatar action to match source action
         self.target_avatar.animation_data.action = self.source_action
+
+    # Function to match node to bone and copy animation
+    def link_animation_nodes_to_armature(self, collection_name="importedAnimation"):
+        self.target_avatar = self.get_target_avatar()
+
+        # Check if the collection exists
+        if collection_name not in bpy.data.collections:
+            print(f"Collection '{collection_name}' not found")
+            return
+        
+        imported_nodes = bpy.data.collections[collection_name].objects
+        print(f"Found {len(imported_nodes)} nodes in collection '{collection_name}'")
+        
+        for node in imported_nodes:
+            bone_name = node.name  # Assuming node names match bone names
+            
+            if bone_name in self.target_avatar.pose.bones:
+                bone = self.target_avatar.pose.bones[bone_name]
+                
+                if bone:
+                    for frame in range(1, bpy.context.scene.frame_end + 1):
+                        # Transfer location keyframes
+                        node.keyframe_insert(data_path="location", frame=frame)
+                        bone.location = node.location
+                        bone.keyframe_insert(data_path="location", frame=frame)
+
+                        # Transfer rotation keyframes
+                        node.keyframe_insert(data_path="rotation_euler", frame=frame)
+                        bone.rotation_euler = node.rotation_euler
+                        bone.keyframe_insert(data_path="rotation_euler", frame=frame)
+
+                        # Transfer scale keyframes
+                        node.keyframe_insert(data_path="scale", frame=frame)
+                        bone.scale = node.scale
+                        bone.keyframe_insert(data_path="scale", frame=frame)
+                    
+                    print(f"Linked animation: Node '{node.name}' → Bone '{bone_name}'")
+                else:
+                    print(f"Bone '{bone_name}' not found in armature")
+            else:
+                print(f"Node '{node.name}' does not match any bone in the armature")
+
 
 if __name__ == "__main__":
     if len(sys.argv) < 2:
@@ -145,12 +224,12 @@ if __name__ == "__main__":
         sys.exit(1)
     
     glb_filepath = sys.argv[sys.argv.index("--") + 1]
-    importer = GLBImporter(glb_filepath)
+    importer = AnimImporter(glb_filepath)
     importer.import_glb()
 
 
 # # Second example ussage:
-# importer = GLBImporter()
+# importer = AnimImporter()
 # importer.find_action_body()
 # importer.find_shape_key_animation()
 # print(importer.action, importer.shape_key_action)
