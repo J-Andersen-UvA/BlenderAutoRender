@@ -7,6 +7,7 @@ sys.path.append(script_dir)  # Add current directory
 
 import renderCameras as rc
 import importAnim as ia
+import optionalScripts.vicon_color as vc
 
 # Parse arguments passed after '--'
 argv = sys.argv[sys.argv.index("--") + 1:]  # Get arguments after '--'
@@ -72,6 +73,21 @@ if '--cameras_apply_modifiers' in argv and argv[argv.index('--cameras_apply_modi
 
                 # Deselect object
                 obj.select_set(False)
+
+if '--vicon_color' in argv:
+    vicon_color = argv[argv.index('--vicon_color') + 1]
+    if vicon_color is not None and vicon_color is not False:
+        col = bpy.data.collections["mainAvatar"]
+        mesh = None
+        if col is None:
+            print("No collection named 'mainAvatar' found.")
+            exit(1)
+
+        for obj in col.objects:
+            if obj.type == 'MESH':
+                mesh = obj
+                break
+        vc.set_color_mesh_mat(mesh, vicon_color)
 
 # Optional: Render the scene
 render = 'True'
