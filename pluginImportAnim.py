@@ -6,6 +6,7 @@ src_directory = os.path.join(plugin_directory, "src")
 sys.path.append(src_directory)
 sys.path.append(r"C:\Users\VICON\Desktop\Code\BlenderAutoRender\BlenderAutoRender\src")
 import importAnim
+import bonerolls
 # from src import importAnim
 
 bl_info = {
@@ -81,6 +82,17 @@ class RETARGET_NODE_ANIM(bpy.types.Operator):
         self.report({'INFO'}, "Node animations retargeted!")
         return {'FINISHED'}
 
+class COPY_OVER_BONE_ROLLS(bpy.types.Operator):
+    bl_idname = "copy.bone_rolls"
+    bl_label = "Copy Bone Rolls"
+    bl_description = "Copy bone rolls from the active armature to the other"
+    bl_options = {'REGISTER', 'UNDO'}
+
+    def execute(self, context):
+        bonerolls.copy_bone_rolls()
+        self.report({'INFO'}, "Bone rolls copied successfully.")
+        return {'FINISHED'}
+
 # UI Panel
 class VIEW3D_PT_GLBImporterPanel(bpy.types.Panel):
     bl_label = "GLB Importer"
@@ -94,6 +106,7 @@ class VIEW3D_PT_GLBImporterPanel(bpy.types.Panel):
         layout.operator("import.glb_browser", text="Import GLB")
         layout.operator("retarget.retarget_and_remove", text="Run retarget/remap")
         layout.operator("retarget.node_anim", text="Retarget node anims to armature")
+        layout.operator("copy.bone_rolls", text="Copy bone rolls")
 
 # Register & Unregister
 def register():
@@ -101,12 +114,14 @@ def register():
     bpy.utils.register_class(RETARGET_FUNCS)
     bpy.utils.register_class(VIEW3D_PT_GLBImporterPanel)
     bpy.utils.register_class(RETARGET_NODE_ANIM)
+    bpy.utils.register_class(COPY_OVER_BONE_ROLLS)
 
 def unregister():
     bpy.utils.unregister_class(IMPORT_OT_GLBBrowser)
     bpy.utils.unregister_class(RETARGET_FUNCS)
     bpy.utils.unregister_class(VIEW3D_PT_GLBImporterPanel)
     bpy.utils.unregister_class(RETARGET_NODE_ANIM)
+    bpy.utils.unregister_class(COPY_OVER_BONE_ROLLS)
 
 if __name__ == "__main__":
     register()
