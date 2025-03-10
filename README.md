@@ -41,6 +41,7 @@ This section describes all the command-line arguments for the Blender Auto Rende
 | --compute_device | Set the compute device for rendering. Choose from 'CUDA', 'OPTIX', 'OPENCL', 'NONE'.               | --compute_device OPTIX     |
 | --fbx_import     | Import FBX instead of GLB. Set to 'True' or 'False'.                                             | --fbx_import True          |
 | --vicon_color    | Color of the Vicon mesh in hexadecimal format.                                                   | --vicon_color #FFFFFF      |
+| --bone_roll     | Copy bone rolls from the source armature to the target armature. Set to 'True' or 'False'.                            | --bone_roll True           |
 
 ## Example full command
 ```bash

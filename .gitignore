@@ -1,3 +1,5 @@
 /out
 /renderScenes/Jake.blend*
 __pycache__/
+/in/test*/
+/in/test/

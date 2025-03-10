@@ -8,6 +8,7 @@ sys.path.append(script_dir)  # Add current directory
 import renderCameras as rc
 import importAnim as ia
 import optionalScripts.vicon_color as vc
+import bonerolls
 
 # Parse arguments passed after '--'
 argv = sys.argv[sys.argv.index("--") + 1:]  # Get arguments after '--'
@@ -45,6 +46,8 @@ print("Importing the following .glb file:", glb_file)
 importer = ia.AnimImporter(glb_file)
 importer.find_action_body()
 importer.find_shape_key_animation()
+if '--bone_roll' in argv and argv[argv.index('--bone_roll') + 1] == 'True':
+    bonerolls.copy_bone_rolls()
 start_frame, end_frame = importer.get_animation_range()
 print("frame range:", start_frame, end_frame)
 print("Imported the following animations:", importer.action, importer.shape_key_action)

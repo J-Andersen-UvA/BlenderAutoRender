@@ -3,7 +3,7 @@ import sys
 import subprocess
 import argparse
 
-def launch_blender(blender_path, scene_path, input_folder, output_folder, deheaded=True, render_engine="CYCLES", background=None, timestretch=None, frame_range=None, output_format='PNG', render_resolution=[1920, 1080], render_samples=128, render=True, cameras_apply_modifiers='True', compute_device='OPTIX', save_blend='False', fbx_import='False', vicon_color=False):
+def launch_blender(blender_path, scene_path, input_folder, output_folder, deheaded=True, render_engine="CYCLES", background=None, timestretch=None, frame_range=None, output_format='PNG', render_resolution=[1920, 1080], render_samples=128, render=True, cameras_apply_modifiers='True', compute_device='OPTIX', save_blend='False', fbx_import='False', vicon_color=False, bone_roll=True):
     for file_name in os.listdir(input_folder):
         if (file_name.endswith('.glb') and fbx_import == 'False') or (fbx_import == 'True' and file_name.endswith('.fbx')):
             file_path = os.path.join(input_folder, file_name)
@@ -68,6 +68,9 @@ def launch_blender(blender_path, scene_path, input_folder, output_folder, dehead
             if vicon_color:
                 command.extend(['--vicon_color', str(vicon_color)])
 
+            # Add optional bone roll
+            command.extend(['--bone_roll', str(bone_roll)])
+
             print(f"Running Blender command:\n{command}\n")
             # Run the Blender command for this .glb file
             subprocess.run(command)
@@ -97,6 +100,7 @@ def main():
     parser.add_argument('--save_blend', type=str, help='Save the .blend file with the rendered results as a new file', default='False', choices=['True', 'False'])
     parser.add_argument('--fbx_import', type=str, help='Import fbx instead of glb', default='False', choices=['True', 'False'])
     parser.add_argument('--vicon_color', type=str, help='Color of the Vicon mesh in hexadecimal format', default='False')
+    parser.add_argument('--bone_roll', type=str, help='Copy bone rolls from one armature to another', default='True')
 
     args = parser.parse_args()
 
@@ -198,6 +202,12 @@ def main():
         print("Error: 'vicon_color' argument must be a hexadecimal color code starting with '#'")
         sys.exit(1)
     
+    if args.bone_roll.lower() not in ['True', 'False', 'true', 'false']:
+        print("Error: 'bone_roll' argument must be 'True' or 'False'")
+        sys.exit(1)
+    else:
+        args.bone_roll = args.bone_roll.lower() == 'true'
+    
     # Launch Blender for each .glb file
     launch_blender(
         blender_path=blender_path,
@@ -217,7 +227,8 @@ def main():
         compute_device=args.compute_device,
         save_blend=args.save_blend,
         fbx_import=args.fbx_import,
-        vicon_color=args.vicon_color
+        vicon_color=args.vicon_color,
+        bone_roll=args.bone_roll
     )
 
 if __name__ == "__main__":
